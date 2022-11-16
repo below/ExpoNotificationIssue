@@ -38,7 +38,9 @@ The root of the problem can be found in [EXPermissionsService.m:111](https://git
     return onResult(permission);
   }
   
-  [self askForGlobalPermissionUsingRequesterClass:requesterClass withResolver:onResult withRejecter:reject];
+  [self askForGlobalPermissionUsingRequesterClass:requesterClass 
+                                     withResolver:onResult 
+                                     withRejecter:reject];
 ```
 
 This means that permissions are only ever requested again, if permission has not previously been granted. This however **does not consider different options**, but only if any sort of notification permissions have been granted. This means that if previously only Alerts have been requested, a new request for Alerts and Sounds will be ignored.
