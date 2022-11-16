@@ -1,69 +1,58 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { useState } from "react";
 
 import {check, request, requestNotifications, PERMISSIONS, RESULTS} from 'react-native-permissions';
+import * as Notifications from 'expo-notifications';
+
+function clickMe() {
+  alert("You clicked me!");
+}
 
 export default function App() {
-  const permission = PERMISSIONS.ANDROID.CAMERA;
-  check(permission).then((result) => {
-    switch (result) {
-      case RESULTS.UNAVAILABLE:
-        console.log('This feature is not available (on this device / in this context)');
-        break;
-      case RESULTS.DENIED:
-        console.log('The permission has not been requested / is denied but requestable');
-        break;
-      case RESULTS.LIMITED:
-        console.log('The permission is limited: some actions are possible');
-        break;
-      case RESULTS.GRANTED:
-        console.log('The permission is granted');
-        break;
-      case RESULTS.BLOCKED:
-        console.log('The permission is denied and not requestable anymore');
-        break;
-    }
-  }).catch((error) => {
-    console.log('Error ' + error);
-  });
+  const [isAlertEnabled, setIsAlertEnabled] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
 
-  const rationale = {
-    title: "Bitte, Bitte",
-    message: "Please give me the requested permission",
-    buttonPositive: "Gerne",
-    buttonNegative: "Geh weg",
-    buttonNeutral: "Mir doch egal"
-  };
-  request(permission, rationale).then((result) => {
-    switch (result) {
-      case RESULTS.UNAVAILABLE:
-        console.log('This feature is not available (on this device / in this context)');
-        break;
-      case RESULTS.DENIED:
-        console.log('The permission has not been requested / is denied but requestable');
-        break;
-      case RESULTS.LIMITED:
-        console.log('The permission is limited: some actions are possible');
-        break;
-      case RESULTS.GRANTED:
-        console.log('The permission is granted');
-        break;
-      case RESULTS.BLOCKED:
-        console.log('The permission is denied and not requestable anymore');
-        break;
-    }
-  }).catch((error) => {
-    console.log('Error ' + error);
-  });
+  async function updatePermissionStatus() {
+    // const { status: existingStatus } = await Notifications.getPermissionsAsync();
 
-  requestNotifications(['alert', 'sound']).then(({status, settings}) => {
-    console.log('Status: ' + status + ' settings: ' + settings);
-  });
+    const settings = await Notifications.getPermissionsAsync();
+    const ios = settings.ios
+    if (ios != null) {
+      setIsAlertEnabled(ios.allowsAlert)
+      setIsSoundEnabled(ios.setIsSoundEnabled)
+    }
+  }
+
+  async function requestAlertsOnly() {
+    await Notifications.requestPermissionsAsync({
+      ios: {
+        allowAlert: true,
+      },
+    })
+    updatePermissionStatus()
+}
+
+  async function requestAlertsAndSound() {
+    await Notifications.requestPermissionsAsync({
+      ios: {
+        allowAlert: true,
+        allowSound: true,
+      },
+    })
+    updatePermissionStatus()
+  }
+
+  updatePermissionStatus()
+  
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-	<Text> this is the second line </Text>
+      <Button onPress={updatePermissionStatus} title="Update Permission Status"/>
+      <Button onPress={requestAlertsOnly} title="Request Alerts"/>
+      <Button onPress={requestAlertsAndSound} title="Request Alerts & Sound"/>
+      {isAlertEnabled ? <Text>Alerts are enabled</Text> : <Text>Alerts are not enabled</Text>}
+      {isSoundEnabled ? <Text>Sound is enabled</Text> : <Text>Sound is not enabled</Text>}
       <StatusBar style="auto" />
     </View>
   );
