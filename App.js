@@ -21,7 +21,7 @@ export default function App() {
     const ios = settings.ios
     if (ios != null) {
       setIsAlertEnabled(ios.allowsAlert)
-      setIsSoundEnabled(ios.setIsSoundEnabled)
+      setIsSoundEnabled(ios.allowsSound)
     }
   }
 
